@@ -1,41 +1,25 @@
-pipeline {
-    agent any
-    environment {
-        IMAGE_NAME = 'task1-onedata-app'
-        IMAGE_TAG = 'latest'
+stage('Install Dependencies') {
+    steps {
+        bat 'npm install'
     }
-    stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/mukesh-1608/Task1-OneData.git'
-            }
-        }
-        stage('Install Dependencies') {
-            steps {
-                sh 'npm install'
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'npm test'
-            }
-        }
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                }
-            }
-        }
-        stage('Run Docker Container') {
-            steps {
-                sh "docker run -d --rm -p 3000:3000 --name ${IMAGE_NAME} ${IMAGE_NAME}:${IMAGE_TAG}"
-            }
-        }
+}
+stage('Test') {
+    steps {
+        bat 'npm test'
     }
-    post {
-        always {
-            sh "docker rm -f ${IMAGE_NAME} || true"
-        }
+}
+stage('Build Docker Image') {
+    steps {
+        bat 'docker build -t task1-onedata-app .'
+    }
+}
+stage('Run Docker Container') {
+    steps {
+        bat 'docker run -d --rm -p 3000:3000 --name task1-onedata-app task1-onedata-app'
+    }
+}
+post {
+    always {
+        bat 'docker rm -f task1-onedata-app || exit 0'
     }
 }
